@@ -1,7 +1,6 @@
 import scrapy
 from selenium.common.exceptions import TimeoutException
 from ..items import KoovsItem
-# from scrapy.utils.response import open_in_browser
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -40,27 +39,11 @@ class KoovSpider(scrapy.Spider):
             time.sleep(1)
             if get_number == count:
                 break
-        # last_height = browser.execute_script("return document.documentElement.scrollHeight")
-        # print('last_height: '+str(last_height))
-        # print('document.body.scrollHeight: '+str(browser.execute_script("return document.body.scrollHeight")))
-        # while True:
-        #     browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        #     try:
-        #         button = WebDriverWait(browser, 20).until(EC.element_to_be_clickable((By.ID, "loadMoreList")))
-        #         button.click()
-        #     except TimeoutException:
-        #         print("No more LOAD MORE RESULTS button to be clicked")
-        #         break
-        #     new_height = browser.execute_script("return document.documentElement.scrollHeight")
-        #     print('new_height: '+str(new_height))
-        #     if new_height == last_height:
-        #         break
-        #     last_height = new_height
 
         return browser.page_source.encode('utf-8')
 
     def parse(self, response):
-        koov_response = scrapy.Selector(text=self.get_selenium_response(self.browser, response.url))
+        koov_response = scrapy.Selector(text=self.get_selenium_response(self.browser, response.url)) # Sending url to selenium webdriver and collecting the selenium response
         item = KoovsItem()
         products = koov_response.css('li.imageView')
         a=1
@@ -73,9 +56,6 @@ class KoovSpider(scrapy.Spider):
             item['title'] = ''.join(title)
             item['price'] = ''.join(price)
             item['image'] = ''.join(image)
-            with open('data.txt', 'a', encoding="utf-8") as f:
+            with open('data.txt', 'a', encoding="utf-8") as f: # Writing data to file
                 f.write('Item No: {0}, Title: {1},Price: {2}, Image: {3}\n'.format(item['no'], item['title'], item['price'],  item['image']))
-            # print('Item No: {0}, Title: {1},Price: {2}, Image: {3}'.format(item['no'], item['title'], item['price'], item['image']).encode("utf-8"))
-            yield item
-
-        # open_in_browser(response)
+            yield item # Writing data to sqlite database file
